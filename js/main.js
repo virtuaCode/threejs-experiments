@@ -10,6 +10,9 @@ picker.on("change", function (color) {
 
   if (selectedMaterial) {
     selectedMaterial.color.setHex(Number.parseInt(color, 16));
+    if (["MG", "MC", "MR"].includes(selectedMaterial.name)) {
+      selectedMaterial.specular.setHex(Number.parseInt(color, 16));
+    }
   }
 });
 
@@ -66,8 +69,11 @@ function init() {
   sceneCube = new THREE.Scene();
 
   // LIGHTS
-  var ambient = new THREE.AmbientLight(0xffffff, 10);
+  var ambient = new THREE.AmbientLight(0xffffff, 0.7);
   scene.add(ambient);
+
+  var sunlight = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
+  scene.add( sunlight );
 
   // SKYBOX TEXTURES
   var textureLoader = new THREE.TextureLoader();
@@ -124,12 +130,22 @@ function init() {
           scene.add(object);
           sword = object;
 
-          //console.log(scene);
-
           // Apply env map to all materials
-          sword.children[0].material.forEach(material => {
+          sword.children[0].material.forEach((material,i) => {
+            
             material.envMap = textureEquirec;
-            colors.unshift(material.color.getHex());
+
+            // Set individual reflectivity
+            if (material.name === "MG")
+              material.reflectivity = 0.95;
+
+            if (material.name === "MR")
+              material.reflectivity = 0.95;
+
+            if (material.name === "W") 
+              material.reflectivity = 0.3;
+         
+            addColor(material.color.getHex());
           });
         }, onProgress, onError);
     });
@@ -155,41 +171,35 @@ function onMouseClick(event) {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-  //console.log(mouse);
-
   raycaster = new THREE.Raycaster();
 
   raycaster.setFromCamera(mouse, camera);
 
-  var intersects = raycaster.intersectObjects(scene.children[1].children);
+  var intersects = raycaster.intersectObjects(scene.children[2].children);
 
   if (intersects.length > 0) {
+    console.log(intersects);
 
     var object = intersects[0].object;
-    //console.log(object);
     var index = intersects[0].face.materialIndex;
 
-    if (event.which === 1) {
-      var cc = object.material[index].color.getHex();
-      object.material[index].color.setHex(nextColor(cc));
-    } else if (event.which === 3) {
+    if (event.which === 1) { 
+      // LEFT CLICK
+      var material = object.material[index];
+      var currentColor = material.color.getHex();
+      material.color.setHex(nextColor(currentColor));
+      if (isMetallic(material)) {
+        material.specular.setHex(nextColor(currentColor));
+      }
+
+    } else if (event.which === 3) { 
+      // RIGHT CLICK
       var cc = object.material[index].color.getHex();
       selectedMaterial = object.material[index];
       picker.enter();
       picker.set("#" + cc.toString(16));
     }
-
   }
-}
-
-function nextColor(c) {
-  var i = colors.indexOf(c);
-
-  if (i < 0) {
-    return colors[0];
-  }
-
-  return colors[(i + 1) % colors.length];
 }
 
 function onKeyDown(event) {
@@ -223,4 +233,22 @@ function render() {
   cameraCube.rotation.copy(camera.rotation);
   renderer.render(sceneCube, cameraCube);
   renderer.render(scene, camera);
+}
+
+// HELPER FUNCTIONS
+function addColor(color) {
+  const inside = colors.some(c => c === color);
+
+  if (!inside) {
+    colors.unshift(color);
+  }
+}
+
+function isMetallic(material) {
+  return ["MG", "MC", "MR"].includes(material.name);
+}
+
+function nextColor(color) {
+  var i = colors.indexOf(color);
+  return i < 0 ? colors[0] : colors[(i + 1) % colors.length]
 }
