@@ -178,8 +178,6 @@ function onMouseClick(event) {
   var intersects = raycaster.intersectObjects(scene.children[2].children);
 
   if (intersects.length > 0) {
-    console.log(intersects);
-
     var object = intersects[0].object;
     var index = intersects[0].face.materialIndex;
 
