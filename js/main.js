@@ -69,10 +69,10 @@ function init() {
   sceneCube = new THREE.Scene();
 
   // LIGHTS
-  var ambient = new THREE.AmbientLight(0xffffff, 0.7);
+  var ambient = new THREE.AmbientLight(0xffffff, 0.4);
   scene.add(ambient);
 
-  var sunlight = new THREE.DirectionalLight( 0xFFFFFF, 0.8 );
+  var sunlight = new THREE.DirectionalLight( 0xFFFFFF, 1 );
   scene.add( sunlight );
 
   // SKYBOX TEXTURES
@@ -143,7 +143,7 @@ function init() {
               material.reflectivity = 0.95;
 
             if (material.name === "W") 
-              material.reflectivity = 0.3;
+              material.reflectivity = 0.0;
          
             addColor(material.color.getHex());
           });
