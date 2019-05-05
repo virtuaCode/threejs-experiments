@@ -1,31 +1,11 @@
 "strict";
 
-
-var picker = new CP(document.querySelector('input[type="text"]'));
-picker.on("change", function (color) {
-  this.source.value = '#' + color;
-
-  if (selectedMaterial) {
-    selectedMaterial.color.setHex(Number.parseInt(color, 16));
-    if (["MG", "MC", "MR"].includes(selectedMaterial.name)) {
-      selectedMaterial.specular.setHex(Number.parseInt(color, 16));
-    }
-  }
-});
-
-picker.on("exit", function (color) {
-  controls.enabled = true;
-  selectedMaterial = null;
-});
-
-picker.on("enter", function (color) {
-  controls.enabled = false;
-});
-
 var controls, camera, scene, renderer;
 var cameraCube, sceneCube;
 var textureEquirec;
 var cubeMesh;
+var selectedMaterial;
+var picker;
 var sword;
 var mouseX = 0;
 var isMoving = true;
@@ -45,10 +25,10 @@ var colors = [
   'ffffff', '000000'
 ].map(c => Number.parseInt(c, 16));
 
-var selectedMaterial;
 
 init();
 animate();
+
 function init() {
   // CAMERAS
   camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 100000);
@@ -161,6 +141,29 @@ function init() {
   window.addEventListener('keydown', onKeyDown, false);
   window.addEventListener('click', onMouseClick);
   window.addEventListener('contextmenu', onContextMenu, true);
+
+  // COLOR PICKER SETUP
+  picker = new CP(document.querySelector('input[type="text"]'));
+
+  picker.on("change", function (color) {
+    this.source.value = '#' + color;
+    if (selectedMaterial) {
+      selectedMaterial.color.setHex(Number.parseInt(color, 16));
+      if (isMetallic(selectedMaterial)) {
+        selectedMaterial.specular.setHex(Number.parseInt(color, 16));
+      }
+    }
+  });
+
+  picker.on("exit", function (color) {
+    controls.enabled = true;
+    selectedMaterial = null;
+  });
+
+  picker.on("enter", function (color) {
+    controls.enabled = false;
+  });
+
 }
 
 function onContextMenu(event) {
