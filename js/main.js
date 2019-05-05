@@ -1,8 +1,5 @@
 "strict";
 
-document.addEventListener('contextmenu', function(e) {
-  e.preventDefault();
-}, false);
 
 var picker = new CP(document.querySelector('input[type="text"]'));
 picker.on("change", function (color) {
@@ -16,12 +13,12 @@ picker.on("change", function (color) {
   }
 });
 
-picker.on("exit", function(color) {
+picker.on("exit", function (color) {
   controls.enabled = true;
   selectedMaterial = null;
 });
 
-picker.on("enter", function(color) {
+picker.on("enter", function (color) {
   controls.enabled = false;
 });
 
@@ -72,8 +69,8 @@ function init() {
   var ambient = new THREE.AmbientLight(0xffffff, 0.4);
   scene.add(ambient);
 
-  var sunlight = new THREE.DirectionalLight( 0xFFFFFF, 1 );
-  scene.add( sunlight );
+  var sunlight = new THREE.DirectionalLight(0xFFFFFF, 1);
+  scene.add(sunlight);
 
   // SKYBOX TEXTURES
   var textureLoader = new THREE.TextureLoader();
@@ -131,8 +128,8 @@ function init() {
           sword = object;
 
           // Apply env map to all materials
-          sword.children[0].material.forEach((material,i) => {
-            
+          sword.children[0].material.forEach((material, i) => {
+
             material.envMap = textureEquirec;
 
             // Set individual reflectivity
@@ -142,9 +139,9 @@ function init() {
             if (material.name === "MR")
               material.reflectivity = 0.95;
 
-            if (material.name === "W") 
+            if (material.name === "W")
               material.reflectivity = 0.0;
-         
+
             addColor(material.color.getHex());
           });
         }, onProgress, onError);
@@ -163,6 +160,34 @@ function init() {
   window.addEventListener('resize', onWindowResize, false);
   window.addEventListener('keydown', onKeyDown, false);
   window.addEventListener('click', onMouseClick);
+  window.addEventListener('contextmenu', onContextMenu, true);
+}
+
+function onContextMenu(event) {
+
+  if (event.which === 3) {
+    var mouse = { x: 0, y: 0 };
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+    var raycaster = new THREE.Raycaster();
+
+    raycaster.setFromCamera(mouse, camera);
+
+    var intersects = raycaster.intersectObjects(scene.children[2].children);
+
+    if (intersects.length > 0) {
+      var object = intersects[0].object;
+      var index = intersects[0].face.materialIndex;
+
+      // RIGHT CLICK
+      var cc = object.material[index].color.getHex();
+      selectedMaterial = object.material[index];
+      picker.enter();
+      picker.set("#" + cc.toString(16));
+    }
+    event.preventDefault();
+  }
 }
 
 function onMouseClick(event) {
@@ -171,7 +196,7 @@ function onMouseClick(event) {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
 
-  raycaster = new THREE.Raycaster();
+  var raycaster = new THREE.Raycaster();
 
   raycaster.setFromCamera(mouse, camera);
 
@@ -181,7 +206,7 @@ function onMouseClick(event) {
     var object = intersects[0].object;
     var index = intersects[0].face.materialIndex;
 
-    if (event.which === 1) { 
+    if (event.which === 1) {
       // LEFT CLICK
       var material = object.material[index];
       var currentColor = material.color.getHex();
@@ -190,12 +215,6 @@ function onMouseClick(event) {
         material.specular.setHex(nextColor(currentColor));
       }
 
-    } else if (event.which === 3) { 
-      // RIGHT CLICK
-      var cc = object.material[index].color.getHex();
-      selectedMaterial = object.material[index];
-      picker.enter();
-      picker.set("#" + cc.toString(16));
     }
   }
 }
