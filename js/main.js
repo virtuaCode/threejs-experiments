@@ -54,7 +54,7 @@ function init() {
 
   // SKYBOX TEXTURES
   var textureLoader = new THREE.TextureLoader();
-  textureEquirec = textureLoader.load("https://threejs.org/examples/textures/2294472375_24a3b8ef46_o.jpg");
+  textureEquirec = textureLoader.load("res/2294472375_24a3b8ef46_o.jpg");
   textureEquirec.mapping = THREE.EquirectangularReflectionMapping;
   textureEquirec.magFilter = THREE.LinearFilter;
   textureEquirec.minFilter = THREE.LinearMipMapLinearFilter;
@@ -139,8 +139,9 @@ function init() {
   // EVENTLISTENER SETUP
   window.addEventListener('resize', onWindowResize, false);
   window.addEventListener('keydown', onKeyDown, false);
-  window.addEventListener('click', onMouseClick);
+  window.addEventListener('click', onMouseClick, true);
   window.addEventListener('contextmenu', onContextMenu, true);
+  window.addEventListener('mouseup', onMouseUp, true);
 
   // COLOR PICKER SETUP
   picker = new CP(document.querySelector('input[type="text"]'));
@@ -164,6 +165,13 @@ function init() {
     controls.enabled = false;
   });
 
+}
+
+function onMouseUp(event) {
+  if (event.which === 3) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
 }
 
 function onContextMenu(event) {
@@ -194,7 +202,6 @@ function onContextMenu(event) {
 }
 
 function onMouseClick(event) {
-
   var mouse = { x: 0, y: 0 };
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
